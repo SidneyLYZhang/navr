@@ -1,6 +1,6 @@
 # Navr
 
-A fast, cross-platform directory navigation tool written in Rust. QuickNav allows you to quickly jump between directories using shortcuts, open file managers, and manage your navigation preferences.
+A fast, cross-platform directory navigation tool written in Rust. Navr allows you to quickly jump between directories using shortcuts, open file managers, and manage your navigation preferences.
 
 ## Features
 
