@@ -1,0 +1,91 @@
+# Navr Configuration Example
+# Copy this file to your config directory:
+#   Windows: %APPDATA%\navr\config.toml
+#   macOS: ~/Library/Application Support/navr/config.toml
+#   Linux: ~/.config/navr/config.toml
+
+version = "0.1.0"
+
+# Default file manager (auto-detect if not set)
+# Common values: explorer, open, dolphin, nautilus, thunar, xdg-open
+default_file_manager = "dolphin"
+
+# Directory shortcuts
+[shortcuts]
+home = "/home/username"
+dev = "/home/username/development"
+work = "/home/username/work"
+personal = "/home/username/personal"
+temp = "/tmp"
+
+# Shell integration settings
+[shell]
+# Enable shell integration
+enabled = true
+
+# Hook into cd command to enable shortcut resolution
+hook_cd = true
+
+# Track directory history
+track_history = true
+
+# Maximum history entries to keep
+max_history = 1000
+
+# Completion style: "fuzzy" or "exact"
+completion_style = "fuzzy"
+
+# Behavior settings
+[behavior]
+# Confirm before overwriting existing shortcuts
+confirm_overwrite = true
+
+# Create missing directories when jumping
+create_missing = false
+
+# Follow symbolic links
+follow_symlinks = true
+
+# Case-sensitive shortcut matching
+case_sensitive = false
+
+# Default to home directory if no target specified
+default_to_home = true
+
+# Platform-specific settings
+[platform.windows]
+# Use Windows Terminal features
+use_windows_terminal = true
+
+# Enable PowerShell-specific aliases
+use_powershell_aliases = true
+
+# Windows-specific file manager
+file_manager = "explorer"
+
+[platform.macos]
+# Use Finder integration
+use_finder = true
+
+# Prefer iTerm2 over Terminal
+prefer_iterm2 = false
+
+# macOS-specific file manager
+file_manager = "open"
+
+[platform.linux]
+# Preferred terminal emulator
+terminal = "alacritty"
+
+# Desktop environment (auto-detected if not set)
+# Values: gnome, kde, xfce, lxde, cinnamon, mate
+desktop_env = "kde"
+
+# Linux-specific file manager
+file_manager = "dolphin"
+
+# Custom file managers for specific scenarios
+[file_managers]
+images = "gthumb"
+media = "vlc"
+code = "code"

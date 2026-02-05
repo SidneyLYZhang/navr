@@ -1,0 +1,78 @@
+[package]
+name = "navr"
+version = "0.1.0"
+edition = "2024"
+authors = ["Sidney Zhang <zly@lyzhang.me>"]
+description = "A fast directory navigation tool with cross-platform support"
+license = "MIT"
+repository = "https://github.com/sidneylyzhang/navr"
+keywords = ["cli", "navigation", "productivity", "shell", "directory"]
+categories = ["command-line-utilities", "development-tools"]
+
+[[bin]]
+name = "navr"
+path = "src/main.rs"
+
+[[bin]]
+name = "navr-shell"
+path = "src/shell/shell_integration.rs"
+
+[dependencies]
+# CLI parsing
+clap = { version = "4.4", features = ["derive", "cargo", "env", "wrap_help"] }
+clap_complete = { version = "4.4", features = ["unstable-dynamic"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.8"
+serde_json = "1.0"
+
+# Error handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+
+# Configuration management
+dirs = "5.0"
+confy = { version = "0.6", features = ["toml"] }
+
+# Interactive prompts
+inquire = { version = "0.7", optional = true }
+
+# Colors in terminal
+owo-colors = "4.0"
+
+# Path expansion
+shellexpand = "3.1"
+
+# Time handling
+chrono = { version = "0.4", features = ["serde"] }
+
+# Command detection
+which = "6.0"
+
+# Platform-specific dependencies
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3", features = ["shellapi", "winuser"] }
+windows = { version = "0.52", features = ["System", "UI", "UI_Shell"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc = "0.2"
+
+[features]
+default = ["interactive"]
+interactive = ["inquire"]
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"
+
+[profile.dev]
+opt-level = 0
+debug = true
