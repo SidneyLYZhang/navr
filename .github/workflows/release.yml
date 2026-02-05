@@ -287,7 +287,8 @@ jobs:
           path: artifacts
 
       - name: Display structure of downloaded files
-        run: ls -R artifacts
+        run: |
+          ls -R artifacts || echo "Artifacts directory is empty or does not exist"
 
       - name: Prepare release assets
         run: |
