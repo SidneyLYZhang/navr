@@ -91,6 +91,10 @@ jobs:
             export CXX=aarch64-linux-gnu-g++
             export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
             cargo build --release --target ${{ matrix.target }}
+          elif [ "${{ matrix.target }}" == "aarch64-apple-darwin" ]; then
+            export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
+            export MACOSX_DEPLOYMENT_TARGET=11.0
+            cargo build --release --target ${{ matrix.target }}
           else
             cargo build --release --target ${{ matrix.target }}
           fi
@@ -113,7 +117,11 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: |
           echo "Stripping binary..."
-          strip target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
+          if [ "${{ matrix.target }}" == "aarch64-apple-darwin" ]; then
+            xcrun --sdk macosx strip target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
+          else
+            strip target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
+          fi
           echo "Binary stripped successfully"
 
       - name: Show final binary size
