@@ -105,7 +105,7 @@ jobs:
         run: |
           echo "Build artifacts:"
           if [ "$RUNNER_OS" == "Windows" ]; then
-            dir target\${{ matrix.target }}\release\
+            dir target/${{ matrix.target }}/release/
           else
             ls -lh target/${{ matrix.target }}/release/
           fi

@@ -1,6 +1,6 @@
 [package]
 name = "navr"
-version = "0.1.7"
+version = "0.1.8"
 edition = "2024"
 authors = ["Sidney Zhang <zly@lyzhang.me>"]
 description = "A fast directory navigation tool with cross-platform support"
