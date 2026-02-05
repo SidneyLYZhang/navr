@@ -198,7 +198,7 @@ jobs:
           version=$(grep '^version' Cargo.toml | head -1 | sed 's/version = "\(.*\)"/\1/')
           cargo generate-rpm --target ${{ matrix.target }}
           arch=$(echo ${{ matrix.target }} | sed 's/x86_64-unknown-linux-gnu/x86_64/' | sed 's/aarch64-unknown-linux-gnu/aarch64/')
-          mv target/generate-rpm/navr-${version}*.rpm navr-${version}-linux-${arch}.rpm
+          mv target/${{ matrix.target }}/generate-rpm/navr-${version}*.rpm navr-${version}-linux-${arch}.rpm
 
       - name: Upload DEB artifact
         uses: actions/upload-artifact@v4
