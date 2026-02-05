@@ -62,7 +62,7 @@ impl FileManager {
     fn open_macos_finder(&self, path: &Path) -> Result<()> {
         #[cfg(target_os = "macos")]
         {
-            Command::new("open")
+            Command::new("xdg-open")
                 .arg(path)
                 .spawn()
                 .context("Failed to open Finder")?;
@@ -171,6 +171,8 @@ impl FileManager {
 
     fn detect_terminal(&self) -> Result<String> {
         let terminals = vec![
+            "Terminal.app",
+            "iTerm.app",
             "gnome-terminal",
             "konsole",
             "xfce4-terminal",

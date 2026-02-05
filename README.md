@@ -5,12 +5,13 @@
 ▸▸ navr
 ```
 ────────────────────────
+
 Fast directory navigation for your shell
 
 
 ![RUST](https://img.shields.io/badge/Rust-000000?style=for-the-badge&logo=rust&logoColor=white) ![LICENSE](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)
 
-English | [中文](README-zh.md)
+English | [中文](README_zh.md)
 
 **navr**, a fast, cross-platform directory navigation tool written in Rust. 
 Navr allows you to quickly jump between directories using shortcuts, open file managers, 

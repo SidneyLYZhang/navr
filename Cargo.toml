@@ -1,6 +1,6 @@
 [package]
 name = "navr"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2024"
 authors = ["Sidney Zhang <zly@lyzhang.me>"]
 description = "A fast directory navigation tool with cross-platform support"
@@ -58,9 +58,6 @@ which = "6.0"
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3", features = ["shellapi", "winuser"] }
 windows = { version = "0.52", features = ["System", "UI", "UI_Shell"] }
-
-[target.'cfg(target_os = "macos")'.dependencies]
-objc = "0.2"
 
 [features]
 default = ["interactive"]
