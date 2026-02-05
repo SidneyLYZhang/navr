@@ -10,6 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial changelog file
 
+## [0.1.6] - 2025-02-05
+
+### Added
+- Support for aarch64-apple-darwin target (Apple Silicon macOS)
+- Platform-specific strip commands for aarch64 architectures
+
+### Changed
+- Improved aarch64 cross-compilation configuration
+- Enhanced build workflow with better cross-platform support
+
 ## [0.1.4] - 2025-02-05
 
 ### Added
