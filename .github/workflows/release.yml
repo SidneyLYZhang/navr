@@ -80,14 +80,22 @@ jobs:
         run: |
           echo "Installing aarch64 cross-compilation tools..."
           sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu
+          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
           echo "Cross-compilation tools installed successfully"
 
       - name: Build binary
         run: |
           echo "Building for target: ${{ matrix.target }}"
-          cargo build --release --target ${{ matrix.target }}
+          if [ "${{ matrix.target }}" == "aarch64-unknown-linux-gnu" ]; then
+            export CC=aarch64-linux-gnu-gcc
+            export CXX=aarch64-linux-gnu-g++
+            export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
+            cargo build --release --target ${{ matrix.target }}
+          else
+            cargo build --release --target ${{ matrix.target }}
+          fi
           echo "Build completed successfully"
+        shell: bash
 
       - name: Show build artifacts
         run: |
