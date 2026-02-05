@@ -231,7 +231,8 @@ impl JumpCommand {
     fn output_path(&self, path: &PathBuf) {
         // Output the path for shell integration to capture
         // The shell wrapper will use this to actually change directory
-        println!("{}", path.display());
+        // Use a special marker to indicate this is a jump request
+        println!("NAVR_JUMP:{}", path.display());
     }
 }
 
@@ -248,8 +249,13 @@ function cd() {
     else
         # Try navr
         local target=$(navr jump "$1" 2>/dev/null)
-        if [[ -n "$target" && -d "$target" ]]; then
-            builtin cd "$target"
+        if [[ -n "$target" ]]; then
+            # Check if output has NAVR_JUMP prefix
+            if [[ "$target" =~ ^NAVR_JUMP:(.+)$ ]]; then
+                builtin cd "${BASH_REMATCH[1]}"
+            else
+                builtin cd "$target"
+            fi
         else
             builtin cd "$1"
         fi
@@ -271,8 +277,14 @@ function cd
     else
         # Try navr
         set -l target (navr jump "$argv[1]" 2>/dev/null)
-        if test -n "$target" -a -d "$target"
-            builtin cd "$target"
+        if test -n "$target"
+            # Check if output has NAVR_JUMP prefix
+            if string match -q 'NAVR_JUMP:*' "$target"
+                set -l jump_path (string replace -r '^NAVR_JUMP:(.+)$' '$1' "$target")
+                builtin cd "$jump_path"
+            else
+                builtin cd "$target"
+            end
         else
             builtin cd "$argv[1]"
         end
@@ -296,8 +308,13 @@ function Set-LocationNavr {
     } else {
         # Try navr
         $target = & navr jump $Path 2>$null
-        if ($target -and (Test-Path -Path $target -PathType Container)) {
-            Set-Location $target
+        if ($target) {
+            # Check if output has NAVR_JUMP prefix
+            if ($target -match '^NAVR_JUMP:(.+)$') {
+                Set-Location $matches[1].Trim()
+            } else {
+                Set-Location $target
+            }
         } else {
             Set-Location $Path
         }

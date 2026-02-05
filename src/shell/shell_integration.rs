@@ -41,7 +41,7 @@ fn handle_cd(args: &[String]) {
     if args.is_empty() {
         // Default to home directory
         if let Some(home) = dirs::home_dir() {
-            println!("{}", home.display());
+            println!("NAVR_JUMP:{}", home.display());
         }
         return;
     }
@@ -51,20 +51,20 @@ fn handle_cd(args: &[String]) {
     // Try direct path first
     let path = PathBuf::from(target);
     if path.is_dir() {
-        println!("{}", path.canonicalize().unwrap_or(path).display());
+        println!("NAVR_JUMP:{}", path.canonicalize().unwrap_or(path).display());
         return;
     }
     
     // Try to load config and resolve shortcut
     if let Ok(config) = load_config() {
         if let Some(shortcut_path) = config.shortcuts.get(target) {
-            println!("{}", shortcut_path);
+            println!("NAVR_JUMP:{}", shortcut_path);
             return;
         }
     }
     
     // Fall back to original target
-    println!("{}", target);
+    println!("NAVR_JUMP:{}", target);
 }
 
 fn handle_complete(args: &[String]) {

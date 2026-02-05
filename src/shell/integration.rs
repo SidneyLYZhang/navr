@@ -22,8 +22,13 @@ qn_cd() {
         # Try to resolve via navr
         local resolved
         resolved=$(navr jump "$target" 2>/dev/null)
-        if [[ -n "$resolved" && -d "$resolved" ]]; then
-            builtin cd "$resolved"
+        if [[ -n "$resolved" ]]; then
+            # Check if output has NAVR_JUMP prefix
+            if [[ "$resolved" =~ ^NAVR_JUMP:(.+)$ ]]; then
+                builtin cd "${BASH_REMATCH[1]}"
+            else
+                builtin cd "$resolved"
+            fi
         else
             builtin cd "$target"
         fi
@@ -80,8 +85,13 @@ qn_cd() {
         # Try to resolve via navr
         local resolved
         resolved=$(navr jump "$target" 2>/dev/null)
-        if [[ -n "$resolved" && -d "$resolved" ]]; then
-            builtin cd "$resolved"
+        if [[ -n "$resolved" ]]; then
+            # Check if output has NAVR_JUMP prefix
+            if [[ "$resolved" =~ ^NAVR_JUMP:(.+)$ ]]; then
+                builtin cd "${match[1]}"
+            else
+                builtin cd "$resolved"
+            fi
         else
             builtin cd "$target"
         fi
@@ -138,8 +148,14 @@ function qn_cd
     else
         # Try to resolve via navr
         set -l resolved (navr jump "$target" 2>/dev/null)
-        if test -n "$resolved" -a -d "$resolved"
-            builtin cd "$resolved"
+        if test -n "$resolved"
+            # Check if output has NAVR_JUMP prefix
+            if string match -q 'NAVR_JUMP:*' "$resolved"
+                set -l jump_path (string replace -r '^NAVR_JUMP:(.+)$' '$1' "$resolved")
+                builtin cd "$jump_path"
+            else
+                builtin cd "$resolved"
+            end
         else
             builtin cd "$target"
         end
@@ -198,8 +214,13 @@ function Set-LocationNavr {
     } else {
         # Try to resolve via navr
         $resolved = & navr jump $Path 2>$null
-        if ($resolved -and (Test-Path -Path $resolved -PathType Container)) {
-            Set-Location $resolved
+        if ($resolved) {
+            # Check if output has NAVR_JUMP prefix
+            if ($resolved -match '^NAVR_JUMP:(.+)$') {
+                Set-Location $matches[1].Trim()
+            } else {
+                Set-Location $resolved
+            }
         } else {
             Set-Location $Path
         }
@@ -209,11 +230,32 @@ function Set-LocationNavr {
 # Override Set-Location (cd)
 Set-Alias -Name cd -Value Set-LocationNavr -Option AllScope -Force
 
-# Navr navigation aliases
-Set-Alias -Name j -Value { param($target) & navr jump $target | Set-Location }
-Set-Alias -Name jo -Value { param($target) & navr open $target }
-Set-Alias -Name jl -Value { & navr jump --list }
-Set-Alias -Name jc -Value { & navr config show }
+# Navr navigation functions
+function j {
+    param([string]$target)
+    $result = & navr jump $target 2>$null
+    if ($result) {
+        # Check if output has NAVR_JUMP prefix
+        if ($result -match '^NAVR_JUMP:(.+)$') {
+            Set-Location $matches[1].Trim()
+        } else {
+            Set-Location $result
+        }
+    }
+}
+
+function jo {
+    param([string]$target)
+    & navr open $target
+}
+
+function jl {
+    & navr jump --list
+}
+
+function jc {
+    & navr config show
+}
 
 # Function to jump and list
 function jcd {
@@ -265,8 +307,14 @@ fn qn_cd [target]{
     } else {
         # Try to resolve via navr
         resolved = (navr jump $target 2>/dev/null)
-        if (and (not (eq $resolved "")) (path:is-dir $resolved)) {
-            cd $resolved
+        if (not (eq $resolved "")) {
+            # Check if output has NAVR_JUMP prefix
+            if (re:match '^NAVR_JUMP:(.+)$' $resolved) {
+                jump_path = (re:replace '^NAVR_JUMP:(.+)$' '$1' $resolved)
+                cd $jump_path
+            } else {
+                cd $resolved
+            }
         } else {
             cd $target
         }
