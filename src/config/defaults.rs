@@ -156,22 +156,18 @@ pub fn detect_desktop_environment() -> Option<String> {
     {
         use std::env;
         
-        // Check XDG_CURRENT_DESKTOP
         if let Ok(de) = env::var("XDG_CURRENT_DESKTOP") {
             return Some(de.to_lowercase());
         }
         
-        // Check DESKTOP_SESSION
         if let Ok(session) = env::var("DESKTOP_SESSION") {
             return Some(session.to_lowercase());
         }
         
-        // Check GNOME_DESKTOP_SESSION_ID
         if env::var("GNOME_DESKTOP_SESSION_ID").is_ok() {
             return Some("gnome".to_string());
         }
         
-        // Check KDE_FULL_SESSION
         if env::var("KDE_FULL_SESSION").is_ok() {
             return Some("kde".to_string());
         }
@@ -199,7 +195,6 @@ pub fn detect_best_file_manager() -> String {
 
     #[cfg(target_os = "linux")]
     {
-        // Try to detect based on desktop environment
         if let Some(de) = detect_desktop_environment() {
             match de.as_str() {
                 "gnome" | "unity" | "pantheon" => {
@@ -236,7 +231,6 @@ pub fn detect_best_file_manager() -> String {
             }
         }
         
-        // Fallback to xdg-open or first available
         for fm in &["xdg-open", "nautilus", "dolphin", "thunar", "pcmanfm"] {
             if which::which(fm).is_ok() {
                 return fm.to_string();
@@ -256,10 +250,8 @@ pub fn detect_best_file_manager() -> String {
 pub fn create_default_config() -> AppConfig {
     let mut config = AppConfig::default();
     
-    // Add default shortcuts
     config.shortcuts = default_shortcuts();
     
-    // Set platform-specific defaults
     #[cfg(target_os = "windows")]
     {
         config.platform.windows.use_windows_terminal = true;
