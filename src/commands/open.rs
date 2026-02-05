@@ -3,7 +3,7 @@
 use anyhow::{Context, Result};
 use owo_colors::OwoColorize;
 use std::path::PathBuf;
-use std::process::Command;
+// use std::process::Command;
 
 use crate::config::AppConfig;
 use crate::platform::file_manager::FileManager;
@@ -82,47 +82,47 @@ impl OpenCommand {
 }
 
 /// Open a path with the system default file manager
-pub fn open_with_default(path: &PathBuf) -> Result<()> {
-    #[cfg(target_os = "windows")]
-    {
-        use std::os::windows::process::CommandExt;
-        const CREATE_NO_WINDOW: u32 = 0x08000000;
+// pub fn open_with_default(path: &PathBuf) -> Result<()> {
+//     #[cfg(target_os = "windows")]
+//     {
+//         use std::os::windows::process::CommandExt;
+//         const CREATE_NO_WINDOW: u32 = 0x08000000;
         
-        Command::new("explorer")
-            .arg(path)
-            .creation_flags(CREATE_NO_WINDOW)
-            .spawn()
-            .context("Failed to open file manager")?;
-    }
+//         Command::new("explorer")
+//             .arg(path)
+//             .creation_flags(CREATE_NO_WINDOW)
+//             .spawn()
+//             .context("Failed to open file manager")?;
+//     }
 
-    #[cfg(target_os = "macos")]
-    {
-        Command::new("open")
-            .arg(path)
-            .spawn()
-            .context("Failed to open file manager")?;
-    }
+//     #[cfg(target_os = "macos")]
+//     {
+//         Command::new("open")
+//             .arg(path)
+//             .spawn()
+//             .context("Failed to open file manager")?;
+//     }
 
-    #[cfg(target_os = "linux")]
-    {
-        // Try xdg-open first
-        if which::which("xdg-open").is_ok() {
-            Command::new("xdg-open")
-                .arg(path)
-                .spawn()
-                .context("Failed to open file manager")?;
-        } else {
-            anyhow::bail!("No suitable file manager found. Please install xdg-open.");
-        }
-    }
+//     #[cfg(target_os = "linux")]
+//     {
+//         // Try xdg-open first
+//         if which::which("xdg-open").is_ok() {
+//             Command::new("xdg-open")
+//                 .arg(path)
+//                 .spawn()
+//                 .context("Failed to open file manager")?;
+//         } else {
+//             anyhow::bail!("No suitable file manager found. Please install xdg-open.");
+//         }
+//     }
 
-    #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
-    {
-        anyhow::bail!("Unsupported platform");
-    }
+//     #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
+//     {
+//         anyhow::bail!("Unsupported platform");
+//     }
 
-    Ok(())
-}
+//     Ok(())
+// }
 
 /// List available file managers
 pub fn list_file_managers() -> Vec<(String, bool)> {

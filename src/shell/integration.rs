@@ -350,36 +350,36 @@ fn jcd [target]{
 }
 "#;
 
-/// Generate a POSIX-compatible wrapper script
-pub fn generate_posix_wrapper() -> String {
-    r#"#!/bin/sh
-# Navr POSIX wrapper script
-# This script can be sourced to enable navr functionality in any POSIX shell
+// /// Generate a POSIX-compatible wrapper script
+// pub fn generate_posix_wrapper() -> String {
+//     r#"#!/bin/sh
+// # Navr POSIX wrapper script
+// # This script can be sourced to enable navr functionality in any POSIX shell
 
-# Main wrapper function
-navr_cd() {
-    _qn_target="$1"
+// # Main wrapper function
+// navr_cd() {
+//     _qn_target="$1"
     
-    if [ -z "$_qn_target" ]; then
-        cd ~
-    elif [ -d "$_qn_target" ]; then
-        cd "$_qn_target"
-    else
-        # Try to resolve via navr
-        _qn_resolved=$(navr jump "$_qn_target" 2>/dev/null)
-        if [ -n "$_qn_resolved" ] && [ -d "$_qn_resolved" ]; then
-            cd "$_qn_resolved"
-        else
-            cd "$_qn_target"
-        fi
-    fi
+//     if [ -z "$_qn_target" ]; then
+//         cd ~
+//     elif [ -d "$_qn_target" ]; then
+//         cd "$_qn_target"
+//     else
+//         # Try to resolve via navr
+//         _qn_resolved=$(navr jump "$_qn_target" 2>/dev/null)
+//         if [ -n "$_qn_resolved" ] && [ -d "$_qn_resolved" ]; then
+//             cd "$_qn_resolved"
+//         else
+//             cd "$_qn_target"
+//         fi
+//     fi
     
-    unset _qn_target _qn_resolved
-}
+//     unset _qn_target _qn_resolved
+// }
 
-# Set up aliases
-alias j='navr jump'
-alias jo='navr open'
-alias jl='navr jump --list'
-"#.to_string()
-}
+// # Set up aliases
+// alias j='navr jump'
+// alias jo='navr open'
+// alias jl='navr jump --list'
+// "#.to_string()
+// }

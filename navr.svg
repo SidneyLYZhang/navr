@@ -1,0 +1,16 @@
+<svg width="240" height="120" viewBox="0 0 240 120" xmlns="http://www.w3.org/2000/svg">
+  <rect width="240" height="120" fill="#0E1116"/>
+  
+  <!-- double execution chevrons -->
+  <polygon points="50,30 90,60 50,90" fill="#5DA9E9"/>
+  <polygon points="95,30 135,60 95,90" fill="#5DA9E9"/>
+
+  <!-- navr text -->
+  <text x="155" y="72"
+        font-family="JetBrains Mono, Fira Code, monospace"
+        font-size="36"
+        fill="#E6E6E6"
+        letter-spacing="1">
+    navr
+  </text>
+</svg>

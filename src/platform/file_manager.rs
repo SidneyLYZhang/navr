@@ -201,57 +201,57 @@ impl FileManager {
     }
 }
 
-/// Get the default file manager for the current platform
-pub fn default_file_manager() -> &'static str {
-    #[cfg(target_os = "windows")]
-    {
-        "explorer"
-    }
+// /// Get the default file manager for the current platform
+// pub fn default_file_manager() -> &'static str {
+//     #[cfg(target_os = "windows")]
+//     {
+//         "explorer"
+//     }
 
-    #[cfg(target_os = "macos")]
-    {
-        "open"
-    }
+//     #[cfg(target_os = "macos")]
+//     {
+//         "open"
+//     }
 
-    #[cfg(target_os = "linux")]
-    {
-        "xdg-open"
-    }
+//     #[cfg(target_os = "linux")]
+//     {
+//         "xdg-open"
+//     }
 
-    #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
-    {
-        "xdg-open"
-    }
-}
+//     #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
+//     {
+//         "xdg-open"
+//     }
+// }
 
-/// Check if a file manager is available
-pub fn is_file_manager_available(fm: &str) -> bool {
-    match fm {
-        "explorer" => cfg!(target_os = "windows"),
-        "open" | "finder" => cfg!(target_os = "macos"),
-        _ => which::which(fm).is_ok(),
-    }
-}
+// /// Check if a file manager is available
+// pub fn is_file_manager_available(fm: &str) -> bool {
+//     match fm {
+//         "explorer" => cfg!(target_os = "windows"),
+//         "open" | "finder" => cfg!(target_os = "macos"),
+//         _ => which::which(fm).is_ok(),
+//     }
+// }
 
-/// Get available file managers for the current platform
-pub fn available_file_managers() -> Vec<&'static str> {
-    let all = vec![
-        "explorer",
-        "open",
-        "finder",
-        "xdg-open",
-        "nautilus",
-        "dolphin",
-        "thunar",
-        "pcmanfm",
-        "nemo",
-        "caja",
-        "ranger",
-        "vifm",
-        "mc",
-    ];
+// /// Get available file managers for the current platform
+// pub fn available_file_managers() -> Vec<&'static str> {
+//     let all = vec![
+//         "explorer",
+//         "open",
+//         "finder",
+//         "xdg-open",
+//         "nautilus",
+//         "dolphin",
+//         "thunar",
+//         "pcmanfm",
+//         "nemo",
+//         "caja",
+//         "ranger",
+//         "vifm",
+//         "mc",
+//     ];
 
-    all.into_iter()
-        .filter(|fm| is_file_manager_available(fm))
-        .collect()
-}
+//     all.into_iter()
+//         .filter(|fm| is_file_manager_available(fm))
+//         .collect()
+// }
