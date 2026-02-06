@@ -232,6 +232,24 @@ impl JumpCommand {
         // Output the path for shell integration to capture
         // The shell wrapper will use this to actually change directory
         // Use a special marker to indicate this is a jump request
-        println!("NAVR_JUMP:{}", path.display());
+        
+        // On Windows, handle path canonicalization and formatting
+        let path_str = if cfg!(windows) {
+            // For Windows, use absolute path without canonicalize to avoid \\?\ prefix
+            let absolute_path = if path.is_absolute() {
+                path.clone()
+            } else {
+                // Convert relative path to absolute
+                std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")).join(path)
+            };
+            
+            // Convert to string and normalize separators
+            absolute_path.to_string_lossy().replace('/', "\\")
+        } else {
+            // For Unix-like systems, use canonicalize
+            path.canonicalize().unwrap_or(path.clone()).to_string_lossy().to_string()
+        };
+        
+        println!("NAVR_JUMP:{}", path_str);
     }
 }

@@ -41,7 +41,12 @@ fn handle_cd(args: &[String]) {
     if args.is_empty() {
         // Default to home directory
         if let Some(home) = dirs::home_dir() {
-            println!("NAVR_JUMP:{}", home.display());
+            let home_path = if cfg!(windows) {
+                home.to_string_lossy().replace('/', "\\")
+            } else {
+                home.to_string_lossy().to_string()
+            };
+            println!("NAVR_JUMP:{}", home_path);
         }
         return;
     }
@@ -51,14 +56,36 @@ fn handle_cd(args: &[String]) {
     // Try direct path first
     let path = PathBuf::from(target);
     if path.is_dir() {
-        println!("NAVR_JUMP:{}", path.canonicalize().unwrap_or(path).display());
+        // On Windows, handle path canonicalization and formatting
+        let path_str = if cfg!(windows) {
+            // For Windows, use absolute path without canonicalize to avoid \\?\ prefix
+            let absolute_path = if path.is_absolute() {
+                path
+            } else {
+                // Convert relative path to absolute
+                std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")).join(path)
+            };
+            
+            // Convert to string and normalize separators
+            absolute_path.to_string_lossy().replace('/', "\\")
+        } else {
+            // For Unix-like systems, use canonicalize
+            path.canonicalize().unwrap_or(path).to_string_lossy().to_string()
+        };
+        println!("NAVR_JUMP:{}", path_str);
         return;
     }
     
     // Try to load config and resolve shortcut
     if let Ok(config) = load_config() {
         if let Some(shortcut_path) = config.shortcuts.get(target) {
-            println!("NAVR_JUMP:{}", shortcut_path);
+            // Normalize shortcut paths for Windows
+            let normalized_path = if cfg!(windows) {
+                shortcut_path.replace('/', "\\")
+            } else {
+                shortcut_path.clone()
+            };
+            println!("NAVR_JUMP:{}", normalized_path);
             return;
         }
     }
@@ -222,18 +249,40 @@ end
 "#.to_string(),
 
         "powershell" => r#"
-# Navr initialization for PowerShell
-eval "$(navr shell complete powershell)"
+# Navr initialization for PowerShell using shell hook approach
 
-# Hook into cd
+# Shell Hook Integration - Initialize using Invoke-Expression
 $env:NAVR_SHELL = "powershell"
 $env:NAVR_ACTIVE = "1"
 
-# Directory tracking
+# Enable completion using shell hook method
+$completionScript = & { (navr shell complete powershell | Out-String) } 2>$null
+if ($completionScript) {
+    # Save to temp file to handle using statements
+    $tempFile = [System.IO.Path]::GetTempFileName()
+    $completionScript | Out-File -FilePath $tempFile -Encoding UTF8
+    try {
+        . $tempFile
+    } finally {
+        Remove-Item -Path $tempFile -Force -ErrorAction SilentlyContinue
+    }
+}
+
+# Directory tracking using shell hooks
 $ExecutionContext.SessionState.InvokeCommand.LocationChangedAction = {
     if ($env:NAVR_ACTIVE) {
         Start-Job { navr-shell hook chpwd } | Out-Null
     }
+}
+
+# Export the initialization command for manual use
+function Invoke-NavrShellInit {
+    Invoke-Expression -Command (& { (navr shell init powershell | Out-String) })
+}
+
+# Auto-initialize if not disabled
+if ($env:NAVR_AUTO_INIT -ne "false") {
+    Invoke-NavrShellInit
 }
 "#.to_string(),
 
