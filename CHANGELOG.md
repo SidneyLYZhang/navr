@@ -10,6 +10,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial changelog file
 
+## [0.1.13] - 2026-02-06
+
+### Added
+- PowerShell installation script for cross-platform installation support
+- Enhanced project documentation and user guides
+
+### Changed
+- Optimized shell integration by removing redundant code and binary files
+- Improved configuration management and default settings
+- Upgraded dependencies to latest stable versions
+
+### Removed
+- navr-shell binary and related packaging metadata (simplified architecture)
+
+## [0.1.12] - 2026-02-06
+
+### Added
+- Quick open mode (`-k/--quick` flag) for directly opening directories
+- Interactive configuration editing with `config edit` command
+- Enhanced fuzzy matching for shortcut suggestions
+- Support for custom file managers per platform
+
+### Changed
+- Refactored command structure for better maintainability
+- Improved error messages with colored output
+- Enhanced platform-specific file manager detection
+
+### Fixed
+- Shell integration compatibility issues across different platforms
+- Path resolution edge cases in jump command
+
 ## [0.1.11] - 2026-02-06
 
 ### Added
