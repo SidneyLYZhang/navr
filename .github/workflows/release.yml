@@ -88,15 +88,12 @@ jobs:
           # 目标平台
           target: ${{ matrix.target }}
           
-          # 压缩格式：Unix 用 tar.gz，Windows 用 zip（默认）
-          tar: unix
+          # 压缩格式：Unix 用 tar.xz，Windows 用 zip（默认）
+          tar-xz: unix
           zip: windows
-          
-          # 自定义归档名（多二进制时不能使用 $bin 变量）
-          archive: navr-${{ needs.create-release.outputs.tag }}-${{ matrix.target }}
-          
-          # Token
-          token: ${{ secrets.GITHUB_TOKEN }}
           
           # 可选：包含额外文件（如 LICENSE、README）
           include: LICENSE,QUICKSTART.md
+          # Token
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
