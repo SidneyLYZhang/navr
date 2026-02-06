@@ -56,7 +56,7 @@ jobs:
           # 压缩格式：Unix 用 tar.xz，Windows 用 zip（默认）
           tar-xz: unix
           zip: windows
-          
+          archive: $bin-$tag-$target
           # 可选：包含额外文件（如 LICENSE、README）
           include: LICENSE,QUICKSTART.md
           # Token
