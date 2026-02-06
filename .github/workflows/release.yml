@@ -5,6 +5,11 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g., v1.0.0)'
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -12,12 +17,31 @@ permissions:
 jobs:
   create-release:
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+      version: ${{ steps.tag.outputs.version }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Get tag info
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.event.ref }}" = "refs/tags/"* ]; then
+            echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+            echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+            echo "version=${{ github.event.inputs.tag#v }}" >> $GITHUB_OUTPUT
+          else
+            echo "Error: This workflow should only be triggered by tag push or workflow_dispatch with tag input"
+            exit 1
+          fi
       - uses: taiki-e/create-gh-release-action@v1
         with:
           changelog: CHANGELOG.md  # 可选：从 CHANGELOG 生成发布说明
           token: ${{ secrets.GITHUB_TOKEN }}
+          ref: refs/tags/${{ steps.tag.outputs.tag }}
 
   upload-assets:
     needs: create-release
@@ -46,6 +70,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       
       # 安装交叉编译工具（Linux 交叉编译需要）
       - name: Install cross-compilation tools
@@ -67,7 +93,7 @@ jobs:
           zip: windows
           
           # 自定义归档名（多二进制时不能使用 $bin 变量）
-          archive: navr-$tag-$target
+          archive: navr-${{ needs.create-release.outputs.tag }}-${{ matrix.target }}
           
           # Token
           token: ${{ secrets.GITHUB_TOKEN }}
