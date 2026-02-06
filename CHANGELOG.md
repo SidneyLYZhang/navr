@@ -10,6 +10,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial changelog file
 
+## [0.1.10] - 2026-02-06
+
+### Added
+- Optimized PowerShell integration script with zoxide pattern for better performance
+- Interactive jump functionality support in PowerShell integration
+
+### Changed
+- Improved release workflow robustness with better handling of missing build artifacts
+- Refactored shell integration for better cross-platform compatibility
+
+### Fixed
+- Windows path normalization issues in jump command
+- Windows system path handling to ensure cross-platform compatibility
+- Release workflow to handle empty directories gracefully
+
+## [0.1.9] - 2026-02-06
+
+### Added
+- Multi-platform package support (deb, rpm, dmg formats)
+- Manual workflow trigger support for releases
+
+### Changed
+- Refactored release process with separate build tasks for different platforms
+- Updated CI configuration to use cargo native commands
+
+## [0.1.8] - 2026-02-06
+
+### Fixed
+- Windows path separator issues in release workflow
+
+## [0.1.7] - 2026-02-06
+
+### Added
+- Windows system compatibility support
+
+### Changed
+- Optimized build process for better cross-platform support
+
 ## [0.1.6] - 2025-02-05
 
 ### Added

@@ -10,319 +10,67 @@ permissions:
   contents: write
 
 jobs:
-  build-windows:
-    name: Build Windows
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        target:
-          - x86_64-pc-windows-msvc
-          - aarch64-pc-windows-msvc
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Show build environment
-        run: |
-          echo "Target: ${{ matrix.target }}"
-          rustc --version
-          cargo --version
-
-      - name: Cache cargo registry
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-registry-
-
-      - name: Cache cargo index
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-index-
-
-      - name: Cache cargo build
-        uses: actions/cache@v4
-        with:
-          path: target
-          key: ${{ runner.os }}-cargo-build-target-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-build-target-${{ matrix.target }}-
-            ${{ runner.os }}-cargo-build-
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: stable
-          targets: ${{ matrix.target }}
-
-      - name: Build binaries
-        run: |
-          echo "Building for target: ${{ matrix.target }}"
-          cargo build --release --target ${{ matrix.target }}
-          echo "Build completed successfully"
-
-      - name: Show build artifacts
-        run: |
-          echo "Build artifacts:"
-          dir target\${{ matrix.target }}\release\
-
-      - name: Get version from tag
-        id: get_version
-        run: |
-          if ("${{ github.ref }}" -match '^refs/tags/v(.*)$') {
-            $version = $matches[1]
-            echo "version=$version" >> $env:GITHUB_OUTPUT
-            echo "Version: $version"
-          }
-
-      - name: Prepare package
-        run: |
-          $target = if ("${{ matrix.target }}" -eq "x86_64-pc-windows-msvc") { "x86_64" } else { "aarch64" }
-          $version = "${{ steps.get_version.outputs.version }}"
-          $packageDir = "navr-$version-windows-$target"
-          New-Item -ItemType Directory -Force -Path $packageDir
-          Copy-Item "target\${{ matrix.target }}\release\navr.exe" -Destination "$packageDir\"
-          Copy-Item "target\${{ matrix.target }}\release\navr-shell.exe" -Destination "$packageDir\"
-          Compress-Archive -Path "$packageDir\*" -DestinationPath "navr-$version-windows-$target.zip"
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: navr-windows-${{ matrix.target }}
-          path: navr-windows-*.zip
-
-  build-linux:
-    name: Build Linux
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Show build environment
-        run: |
-          echo "Target: x86_64-unknown-linux-gnu"
-          rustc --version
-          cargo --version
-
-      - name: Cache cargo registry
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-registry-
-
-      - name: Cache cargo index
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-index-
-
-      - name: Cache cargo build
-        uses: actions/cache@v4
-        with:
-          path: target
-          key: ${{ runner.os }}-cargo-build-target-x86_64-unknown-linux-gnu-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-build-target-x86_64-unknown-linux-gnu-
-            ${{ runner.os }}-cargo-build-
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: stable
-          targets: x86_64-unknown-linux-gnu
-
-      - name: Install packaging tools
-        run: |
-          cargo install cargo-deb cargo-generate-rpm
-
-      - name: Build binaries
-        run: |
-          echo "Building for target: x86_64-unknown-linux-gnu"
-          cargo build --release --target x86_64-unknown-linux-gnu
-          echo "Build completed successfully"
-
-      - name: Show build artifacts
-        run: |
-          echo "Build artifacts:"
-          ls -lh target/x86_64-unknown-linux-gnu/release/
-
-      - name: Strip binary
-        run: |
-          echo "Stripping binary..."
-          strip target/x86_64-unknown-linux-gnu/release/navr
-          strip target/x86_64-unknown-linux-gnu/release/navr-shell
-          echo "Binary stripped successfully"
-
-      - name: Prepare DEB package
-        run: |
-          version=$(grep '^version' Cargo.toml | head -1 | sed 's/version = "\(.*\)"/\1/')
-          cargo deb --target x86_64-unknown-linux-gnu
-          mv target/debian/navr_${version}*.deb navr-${version}-linux-amd64.deb
-
-      - name: Prepare RPM package
-        run: |
-          version=$(grep '^version' Cargo.toml | head -1 | sed 's/version = "\(.*\)"/\1/')
-          cargo generate-rpm --target x86_64-unknown-linux-gnu
-          mv target/x86_64-unknown-linux-gnu/generate-rpm/navr-${version}*.rpm navr-${version}-linux-x86_64.rpm
-
-      - name: Upload DEB artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: navr-linux-x86_64-unknown-linux-gnu-deb
-          path: navr-linux-*.deb
-
-      - name: Upload RPM artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: navr-linux-x86_64-unknown-linux-gnu-rpm
-          path: navr-linux-*.rpm
-
-  build-macos:
-    name: Build macOS
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        target:
-          - x86_64-apple-darwin
-          - aarch64-apple-darwin
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Show build environment
-        run: |
-          echo "Target: ${{ matrix.target }}"
-          rustc --version
-          cargo --version
-
-      - name: Cache cargo registry
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-registry-
-
-      - name: Cache cargo index
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-index-
-
-      - name: Cache cargo build
-        uses: actions/cache@v4
-        with:
-          path: target
-          key: ${{ runner.os }}-cargo-build-target-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-build-target-${{ matrix.target }}-
-            ${{ runner.os }}-cargo-build-
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: stable
-          targets: ${{ matrix.target }}
-
-      - name: Build binaries
-        run: |
-          echo "Building for target: ${{ matrix.target }}"
-          export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
-          export MACOSX_DEPLOYMENT_TARGET=11.0
-          cargo build --release --target ${{ matrix.target }}
-          echo "Build completed successfully"
-
-      - name: Show build artifacts
-        run: |
-          echo "Build artifacts:"
-          ls -lh target/${{ matrix.target }}/release/
-
-      - name: Strip binary
-        run: |
-          echo "Stripping binary..."
-          xcrun --sdk macosx strip target/${{ matrix.target }}/release/navr
-          xcrun --sdk macosx strip target/${{ matrix.target }}/release/navr-shell
-          echo "Binary stripped successfully"
-
-      - name: Prepare DMG package
-        run: |
-          target=${{ matrix.target }}
-          arch=$(echo $target | sed 's/x86_64/x86_64/' | sed 's/aarch64/arm64/' | sed 's/-apple-darwin//')
-          version=$(grep '^version' Cargo.toml | head -1 | sed 's/version = "\(.*\)"/\1/')
-          package_name="navr-$version-macos-$arch"
-          
-          mkdir -p $package_name
-          cp target/$target/release/navr $package_name/
-          cp target/$target/release/navr-shell $package_name/
-          
-          hdiutil create -volname "navr $version" -srcfolder $package_name -ov -format UDZO navr-$version-macos-$arch.dmg
-
-      - name: Upload DMG artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: navr-macos-${{ matrix.target }}-dmg
-          path: navr-macos-*.dmg
-
   create-release:
-    name: Create GitHub Release
-    needs: [build-windows, build-linux, build-macos]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
+      - uses: actions/checkout@v4
+      - uses: taiki-e/create-gh-release-action@v1
         with:
-          path: artifacts
+          changelog: CHANGELOG.md  # 可选：从 CHANGELOG 生成发布说明
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Display structure of downloaded files
-        run: |
-          if [ -d "artifacts" ]; then
-            ls -R artifacts
-          else
-            echo "Artifacts directory does not exist - checking for individual artifact directories"
-            ls -la
-          fi
+  upload-assets:
+    needs: create-release
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Linux
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-latest
+            
+          # macOS (Intel + Apple Silicon + Universal)
+          - target: x86_64-apple-darwin
+            os: macos-latest
+          - target: aarch64-apple-darwin
+            os: macos-latest
+          - target: universal-apple-darwin  # 通用二进制
+            os: macos-latest
+            
+          # Windows
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
 
-      - name: Prepare release assets
-        run: |
-          mkdir -p release
-          # Check if artifacts directory exists and contains files
-          if [ -d "artifacts" ]; then
-            find artifacts -type f \( -name "*.zip" -o -name "*.deb" -o -name "*.rpm" -o -name "*.dmg" \) -exec cp {} release/ \;
-          else
-            # Try to find artifacts in individual directories
-            echo "Searching for artifacts in individual directories..."
-            find . -type f \( -name "*.zip" -o -name "*.deb" -o -name "*.rpm" -o -name "*.dmg" \) -exec cp {} release/ \; 2>/dev/null || true
-          fi
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      # 安装交叉编译工具（Linux 交叉编译需要）
+      - name: Install cross-compilation tools
+        uses: taiki-e/setup-cross-toolchain-action@v1
+        with:
+          target: ${{ matrix.target }}
+        if: startsWith(matrix.os, 'ubuntu')
+
+      - uses: taiki-e/upload-rust-binary-action@v1
+        with:
+          # 多二进制文件：逗号分隔，不要有空格
+          bin: navr
           
-          # Check if we have any release assets
-          if [ "$(ls -A release)" ]; then
-            echo "Release assets found:"
-            ls -lh release/
-          else
-            echo "Warning: No release assets found"
-            # Create a dummy file to prevent workflow failure
-            echo "No artifacts available for this release" > release/README.txt
-          fi
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: release/*
-          generate_release_notes: true
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # 目标平台
+          target: ${{ matrix.target }}
+          
+          # 压缩格式：Unix 用 tar.gz，Windows 用 zip（默认）
+          tar: unix
+          zip: windows
+          
+          # 自定义归档名（多二进制时不能使用 $bin 变量）
+          archive: navr-$tag-$target
+          
+          # Token
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+          # 可选：包含额外文件（如 LICENSE、README）
+          include: LICENSE,QUICKSTART.md

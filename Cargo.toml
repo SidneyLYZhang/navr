@@ -13,9 +13,6 @@ categories = ["command-line-utilities", "development-tools"]
 name = "navr"
 path = "src/main.rs"
 
-[[bin]]
-name = "navr-shell"
-path = "src/shell/shell_integration.rs"
 
 [dependencies]
 # CLI parsing
@@ -73,24 +70,3 @@ panic = "abort"
 [profile.dev]
 opt-level = 0
 debug = true
-
-[package.metadata.deb]
-maintainer = "Sidney Zhang <zly@lyzhang.me>"
-copyright = "2024, Sidney Zhang <zly@lyzhang.me>"
-license-file = ["LICENSE", "0"]
-extended-description = """\
-navr is a fast and efficient directory navigation tool that helps you
-quickly navigate through your file system with minimal keystrokes."""
-depends = "$auto"
-section = "utility"
-priority = "optional"
-assets = [
-    ["target/release/navr", "usr/bin/", "755"],
-    ["target/release/navr-shell", "usr/bin/", "755"],
-]
-
-[package.metadata.generate-rpm]
-assets = [
-    { source = "target/release/navr", dest = "/usr/bin/navr", mode = "755" },
-    { source = "target/release/navr-shell", dest = "/usr/bin/navr-shell", mode = "755" },
-]
