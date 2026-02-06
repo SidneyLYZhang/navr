@@ -10,7 +10,6 @@ use std::path::PathBuf;
 use crate::Cli;
 use crate::platform::shell_config_path;
 
-pub mod completions;
 pub mod integration;
 
 /// Generate shell completion scripts

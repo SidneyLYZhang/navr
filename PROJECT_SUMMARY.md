@@ -249,7 +249,7 @@ Potential additions:
 
 ## License
 
-Dual-licensed under MIT
+licensed under MIT
 
 ## Credits
 

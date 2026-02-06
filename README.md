@@ -1,7 +1,7 @@
 ![navr logo](./navr.svg)
 
-```text  
-         
+```text
+
 ▸▸ navr
 ```
 ────────────────────────
@@ -13,7 +13,7 @@ Fast directory navigation for your shell
 
 English | [中文](README_zh.md)
 
-**navr**, a fast, cross-platform directory navigation tool written in Rust. 
+**navr** is a fast, cross-platform directory navigation tool written in Rust. 
 Navr allows you to quickly jump between directories using shortcuts, open file managers, 
 and manage your navigation preferences.
 
@@ -22,11 +22,13 @@ and manage your navigation preferences.
 
 - 🚀 **Quick Directory Jumping** - Navigate to frequently used directories with short aliases
 - 📂 **File Manager Integration** - Open directories in your preferred file manager
-- 🔧 **Configurable** - Customize shortcuts, file managers, and behavior
+- 🔧 **Highly Configurable** - Customize shortcuts, file managers, and behavior
 - 🖥️ **Cross-Platform** - Works on Windows, macOS, and Linux
 - 🐚 **Shell Integration** - Seamless integration with Bash, Zsh, Fish, and PowerShell
 - 📋 **Tab Completions** - Auto-complete shortcuts in your shell
 - 📤 **Import/Export** - Backup and share your configuration
+- 🎯 **Fuzzy Matching** - Smart shortcut matching
+- 🆕 **Auto-create Directories** - Create missing directories on the fly
 
 ## Installation
 
@@ -42,6 +44,12 @@ cargo build --release
 cargo install --path .
 ```
 
+### Using Cargo
+
+```bash
+cargo install navr
+```
+
 ### Prerequisites
 
 - Rust 1.70 or later
@@ -52,6 +60,8 @@ cargo install --path .
 ```bash
 # Add current directory as a shortcut
 navr jump --add work
+# or using alias
+j --add work
 
 # Jump to a shortcut
 navr jump work
@@ -60,7 +70,7 @@ j work
 
 # Open in file manager
 navr open work
-# or
+# or using alias
 jo work
 
 # List all shortcuts
@@ -69,7 +79,7 @@ navr jump --list
 
 ## Commands
 
-### Jump Command
+### Jump Command (`j`)
 
 Navigate to directories using shortcuts or paths.
 
@@ -85,12 +95,14 @@ Options:
 Examples:
 ```bash
 navr jump work          # Jump to 'work' shortcut
+j work                  # Same using alias
 navr jump ~/projects    # Jump to path
-navr jump --add dev     # Add current dir as 'dev'
-navr jump --remove old  # Remove 'old' shortcut
+j --add dev             # Add current dir as 'dev'
+j --remove old          # Remove 'old' shortcut
+j --list                # List all shortcuts
 ```
 
-### Open Command
+### Open Command (`o`)
 
 Open directories in file manager.
 
@@ -104,6 +116,7 @@ Options:
 Examples:
 ```bash
 navr open work          # Open with default file manager
+jo work                 # Same using alias
 navr open docs --with dolphin  # Open with Dolphin
 ```
 
@@ -115,7 +128,7 @@ Use `-k` or `--quick` for direct opening:
 navr -k work            # Quick open 'work' shortcut
 ```
 
-### Config Command
+### Config Command (`cfg`)
 
 Manage configuration.
 
@@ -138,7 +151,7 @@ navr config set behavior.create_missing true
 navr config set-file-manager dolphin
 ```
 
-### Shell Command
+### Shell Command (`sh`)
 
 Shell integration and completions.
 
@@ -165,7 +178,7 @@ navr shell install fish
 navr shell init bash
 ```
 
-### Export/Import
+### Export/Import (`exp`/`imp`)
 
 Backup and restore configuration.
 
@@ -190,6 +203,7 @@ Configuration is stored in:
 ### Example Configuration
 
 ```toml
+version = "1.0"
 default_file_manager = "dolphin"
 
 [shortcuts]
@@ -202,6 +216,7 @@ enabled = true
 hook_cd = true
 track_history = true
 max_history = 1000
+completion_style = "fuzzy"
 
 [behavior]
 confirm_overwrite = true
@@ -213,6 +228,15 @@ default_to_home = true
 [platform.linux]
 desktop_env = "kde"
 file_manager = "dolphin"
+terminal = "kitty"
+
+[platform.windows]
+use_windows_terminal = true
+use_powershell_aliases = true
+
+[platform.macos]
+use_finder = true
+prefer_iterm2 = false
 ```
 
 ## Shell Integration
@@ -246,6 +270,20 @@ navr shell init fish | source
 # Add to $PROFILE
 navr shell init powershell | Invoke-Expression
 ```
+
+### Available Aliases
+
+After installing shell integration, you get these convenient aliases:
+
+| Alias | Command | Description |
+|-------|---------|-------------|
+| `j` | `navr jump` | Jump to shortcut |
+| `jo` | `navr open` | Open in file manager |
+| `jl` | `navr jump --list` | List shortcuts |
+| `cfg` | `navr config` | Configuration management |
+| `sh` | `navr shell` | Shell integration |
+| `exp` | `navr export` | Export configuration |
+| `imp` | `navr import` | Import configuration |
 
 ## Default Shortcuts
 
@@ -315,14 +353,17 @@ cargo doc --open
 ### Project Structure
 
 ```
-quicknav/
+navr/
 ├── Cargo.toml
 ├── README.md
+├── QUICKSTART.md
+├── ARCHITECTURE.md
 └── src/
     ├── main.rs              # CLI entry point
     ├── config/              # Configuration management
     │   ├── mod.rs
-    │   └── defaults.rs
+    │   ├── defaults.rs
+    │   └── tests.rs
     ├── commands/            # Command implementations
     │   ├── mod.rs
     │   ├── jump.rs
@@ -340,15 +381,23 @@ quicknav/
         └── shell_integration.rs
 ```
 
-## License
-
-This project `Navr` is licensed under the MIT license.
-
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 
 - Built with [clap](https://github.com/clap-rs/clap) for CLI parsing
 - Uses [serde](https://github.com/serde-rs/serde) for configuration management
+- Uses [anyhow](https://github.com/dtolnay/anyhow) for error handling
+- Uses [owo-colors](https://github.com/jam1garner/owo-colors) for terminal colors

@@ -250,6 +250,6 @@ impl JumpCommand {
             path.canonicalize().unwrap_or(path.clone()).to_string_lossy().to_string()
         };
         
-        println!("NAVR_JUMP:{}", path_str);
+        println!("{}", path_str);
     }
 }

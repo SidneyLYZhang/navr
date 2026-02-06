@@ -398,13 +398,7 @@ fn qn_cd [target]{
         # Try to resolve via navr
         resolved = (navr jump $target 2>/dev/null)
         if (not (eq $resolved "")) {
-            # Check if output has NAVR_JUMP prefix
-            if (re:match '^NAVR_JUMP:(.+)$' $resolved) {
-                jump_path = (re:replace '^NAVR_JUMP:(.+)$' '$1' $resolved)
-                cd $jump_path
-            } else {
-                cd $resolved
-            }
+            cd $resolved
         } else {
             cd $target
         }

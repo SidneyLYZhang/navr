@@ -1,16 +1,16 @@
-# Navr Quick Start Guide
+# Navr 快速开始指南
 
-Get up and running with Navr in 5 minutes!
+5 分钟内上手 Navr！
 
-## Installation
+## 安装
 
-### Option 1: Using the install script (Recommended)
+### 方式 1：使用安装脚本（推荐）
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/sidneylyzhang/navr/main/install.sh | bash
 ```
 
-### Option 2: Build from source
+### 方式 2：从源码构建
 
 ```bash
 git clone https://github.com/sidneylyzhang/navr
@@ -19,17 +19,17 @@ cargo build --release
 sudo cp target/release/navr /usr/local/bin/
 ```
 
-### Option 3: Using Cargo
+### 方式 3：使用 Cargo
 
 ```bash
 cargo install navr
 ```
 
-## Initial Setup
+## 初始设置
 
-### 1. Add shell integration
+### 1. 添加 Shell 集成
 
-Add the following to your shell configuration file:
+将以下内容添加到您的 Shell 配置文件中：
 
 **Bash** (`~/.bashrc`):
 ```bash
@@ -51,92 +51,94 @@ navr shell init fish | source
 navr shell init powershell | Invoke-Expression
 ```
 
-### 2. Reload your shell
+### 2. 重新加载 Shell
 
 ```bash
-source ~/.bashrc  # or .zshrc, etc.
+source ~/.bashrc  # 或 .zshrc 等
 ```
 
-## Basic Usage
+## 基本用法
 
-### Add shortcuts
+### 添加快捷方式
 
 ```bash
-# Navigate to a directory you use often
+# 进入您常用的目录
 cd ~/projects/my-awesome-project
 
-# Add it as a shortcut
+# 添加为快捷方式
 navr jump --add awesome
-# or simply
+# 或使用别名
 j --add awesome
 ```
 
-### Jump to shortcuts
+### 跳转到快捷方式
 
 ```bash
-# Jump using the shortcut
+# 使用快捷方式跳转
 j awesome
 
-# Or use the full command
+# 或使用完整命令
 navr jump awesome
 ```
 
-### List all shortcuts
+### 列出所有快捷方式
 
 ```bash
 j --list
-# or
-jl  # if you have the alias set up
+# 或使用别名
+jl  # 如果已设置别名
 ```
 
-### Open in file manager
+### 在文件管理器中打开
 
 ```bash
-# Open the shortcut in your default file manager
+# 使用默认文件管理器打开快捷方式
 jo awesome
 
-# Or specify a file manager
+# 指定文件管理器
 navr open awesome --with dolphin
 ```
 
-## Quick Mode
+## 快速模式
 
-Use the `-k` or `--quick` flag for direct opening:
+使用 `-k` 或 `--quick` 标志直接打开：
 
 ```bash
 navr -k awesome
 ```
 
-This is useful for scripting and quick access.
+适用于脚本和快速访问。
 
-## Configuration
+## 配置
 
-### View configuration
+### 查看配置
 
 ```bash
 navr config show
+# 或
+cfg  # 别名
 ```
 
-### Set default file manager
+### 设置默认文件管理器
 
 ```bash
 navr config set-file-manager dolphin
 ```
 
-### Edit configuration interactively
+### 交互式编辑配置
 
 ```bash
 navr config edit
 ```
 
-### Manual configuration
+### 手动配置
 
-Edit the config file directly:
+直接编辑配置文件：
 
 - **Linux/macOS**: `~/.config/quicknav/config.toml`
 - **Windows**: `%APPDATA%\quicknav\config.toml`
 
-Example:
+示例配置：
 ```toml
 default_file_manager = "dolphin"
 
@@ -146,125 +148,148 @@ work = "/home/username/work"
 projects = "/home/username/projects"
 ```
 
-## Shell Shortcuts
+## 命令别名
 
-After installing shell integration, you get these aliases:
+安装 Shell 集成后，您可以使用以下别名：
 
-| Alias | Command | Description |
-|-------|---------|-------------|
-| `j` | `quicknav jump` | Jump to shortcut |
-| `jo` | `quicknav open` | Open in file manager |
-| `jl` | `quicknav jump --list` | List shortcuts |
-| `jc` | `quicknav config show` | Show config |
+| 别名 | 命令 | 描述 |
+|------|---------|-------------|
+| `j` | `navr jump` | 跳转到快捷方式 |
+| `jo` | `navr open` | 在文件管理器中打开 |
+| `jl` | `navr jump --list` | 列出快捷方式 |
+| `cfg` | `navr config` | 配置管理 |
+| `sh` | `navr shell` | Shell 集成 |
 
-## Tab Completion
+## Tab 自动补全
 
-QuickNav provides tab completion for shortcuts:
-
-```bash
-j wo<TAB>    # Completes to 'work' if you have that shortcut
-j pro<TAB>   # Completes to 'projects'
-```
-
-## Tips & Tricks
-
-### 1. Fuzzy matching
-
-Shortcuts are matched fuzzily by default:
+Navr 为快捷方式提供 Tab 自动补全：
 
 ```bash
-j wo      # Matches 'work', 'workspace', etc.
+j wo<TAB>    # 如果有 'work' 快捷方式，会自动补全
+j pro<TAB>   # 补全为 'projects'
 ```
 
-### 2. Path expansion
+## 实用技巧
 
-You can use paths with shortcuts:
+### 1. 模糊匹配
+
+快捷方式默认支持模糊匹配：
+
+```bash
+j wo      # 匹配 'work', 'workspace' 等
+```
+
+### 2. 路径扩展
+
+可以将快捷方式与路径结合使用：
 
 ```bash
 j awesome/src
 ```
 
-### 3. Create directories on the fly
+### 3. 自动创建目录
 
-Enable in config:
+在配置中启用：
 ```toml
 [behavior]
 create_missing = true
 ```
 
-Then:
+然后：
 ```bash
-j newproject  # Creates the directory if it doesn't exist
+j newproject  # 如果目录不存在，会自动创建
 ```
 
-### 4. Import/Export configuration
+### 4. 导入/导出配置
 
-Backup your config:
+备份配置：
 ```bash
 navr export --format toml --output backup.toml
+# 或
+exp --format json > backup.json
 ```
 
-Restore on another machine:
+在另一台机器上恢复：
 ```bash
 navr import backup.toml
+# 或
+imp backup.toml
 ```
 
-### 5. Use with other tools
+### 5. 与其他工具结合使用
 
-Combine with `ls`:
+与 `ls` 结合：
 ```bash
 j awesome && ls -la
 ```
 
-Use in scripts:
+在脚本中使用：
 ```bash
 #!/bin/bash
 PROJECT_DIR=$(navr jump awesome)
 cd "$PROJECT_DIR"
-# Do something...
+# 执行其他操作...
 ```
 
-## Troubleshooting
+## 默认快捷方式
 
-### Command not found
+Navr 预置了常用目录的快捷方式：
 
-Make sure the binary is in your PATH:
+| 快捷方式 | 目录 |
+|----------|-----------|
+| `home`, `~`, `h` | 主目录 |
+| `desktop`, `desk` | 桌面 |
+| `docs`, `documents` | 文档 |
+| `downloads`, `dl` | 下载 |
+| `pictures`, `pics` | 图片 |
+| `music` | 音乐 |
+| `videos` | 视频 |
+| `config`, `cfg` | 配置目录 |
+
+开发相关（如果目录存在）：
+| `dev` | ~/dev |
+| `projects`, `proj` | ~/projects |
+| `workspace`, `ws` | ~/workspace |
+| `repos` | ~/repos |
+| `github`, `gh` | ~/github |
+
+## 故障排除
+
+### 命令未找到
+
+确保二进制文件在 PATH 中：
 ```bash
 which navr
 ```
 
-If not, add to your PATH:
+如果不在，添加到 PATH：
 ```bash
 export PATH="$PATH:/path/to/navr"
 ```
 
-### Shell integration not working
+### Shell 集成不工作
 
-1. Check that you reloaded your shell config
-2. Verify the init command works:
+1. 确认已重新加载 Shell 配置
+2. 验证初始化命令是否正常工作：
    ```bash
    navr shell init bash
    ```
-3. Check for errors in your shell config
+3. 检查 Shell 配置中的错误
 
-### Shortcuts not resolving
+### 快捷方式无法解析
 
-1. Check if shortcut exists:
+1. 检查快捷方式是否存在：
    ```bash
    j --list
    ```
-2. Verify the path is valid:
+2. 验证路径是否有效：
    ```bash
    navr config get shortcuts.<name>
    ```
 
-## Next Steps
+## 获取帮助
 
-- Read the full [README.md](README.md)
-- Explore all commands with `navr --help`
-- Check out example configurations in `examples/`
-
-## Getting Help
-
-- Open an issue: https://github.com/sidneylyzhang/navr/issues
-- Read the docs: https://github.com/sidneylyzhang/navr/wiki
+- 查看帮助：`navr --help`
+- 查看命令帮助：`navr <command> --help`
+- 提交 Issue：https://github.com/sidneylyzhang/navr/issues
+- 完整文档：[README.md](README.md)

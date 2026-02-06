@@ -50,9 +50,17 @@ The entry point of the application. Responsibilities:
 - Error handling
 
 Key structures:
-- `Cli`: Main CLI argument structure
-- `Commands`: Enum of all subcommands
+- `Cli`: Main CLI argument structure with global options (`verbose`, `config`, `quick`)
+- `Commands`: Enum of all subcommands (Jump, Open, Config, Shell, Export, Import)
 - `run()`: Main execution function
+
+Command aliases defined via `visible_alias`:
+- `jump` → `j`
+- `open` → `o`
+- `config` → `cfg`
+- `shell` → `sh`
+- `export` → `exp`
+- `import` → `imp`
 
 ### `config/`
 
@@ -61,25 +69,24 @@ Configuration management module.
 #### `mod.rs`
 
 Core configuration structures and operations:
-- `AppConfig`: Main configuration struct
-- `ShellConfig`: Shell integration settings
-- `BehaviorConfig`: Behavior settings
-- `PlatformConfig`: Platform-specific settings
+- `AppConfig`: Main configuration struct with version, shortcuts, and nested configs
+- `ShellConfig`: Shell integration settings (enabled, hook_cd, track_history, max_history, completion_style)
+- `BehaviorConfig`: Behavior settings (confirm_overwrite, create_missing, follow_symlinks, case_sensitive, default_to_home)
+- `PlatformConfig`: Platform-specific settings (WindowsConfig, MacOSConfig, LinuxConfig)
 
 Key methods:
 - `load()`: Load from default location
+- `load_from_path()`: Load from specific path
 - `save()`: Save to default location
-- `set_shortcut()`: Add/update shortcut
-- `get_shortcut()`: Retrieve shortcut
+- `get_shortcut()`: Retrieve shortcut path
 - `get_file_manager()`: Get platform-appropriate file manager
 
 #### `defaults.rs`
 
 Default values and platform detection:
-- `default_shortcuts()`: Generate default shortcuts
-- `detect_desktop_environment()`: Detect Linux DE
-- `detect_best_file_manager()`: Auto-detect file manager
-- `create_default_config()`: Create config with smart defaults
+- `default_shortcuts()`: Generate default shortcuts for common directories
+- Platform-specific default detection for home, desktop, documents, downloads, pictures, music, videos, config
+- Development shortcuts (dev, projects, workspace, repos, github) - only if directories exist
 
 ### `commands/`
 
@@ -94,32 +101,43 @@ Each command module provides:
 
 Directory navigation command:
 - Resolve shortcuts to paths
-- List configured shortcuts
+- List configured shortcuts (grouped by category: System, Development, Custom)
 - Add/remove shortcuts
-- Fuzzy matching
-- Shell wrapper generation
+- Fuzzy matching for suggestions
+- Path expansion (supports `~` and environment variables)
+- Auto-create missing directories (if enabled in config)
 
 #### `open.rs`
 
 File manager integration:
 - Open directories in file managers
 - Cross-platform file manager support
-- Terminal-based file manager handling
+- Custom file manager selection via `--with`
+- Path resolution (shortcuts or direct paths)
 
 #### `config.rs`
 
 Configuration management command:
-- Show configuration
-- Interactive editing
+- Show configuration (formatted display)
+- Interactive editing (using `inquire` crate)
 - Get/set values
 - Reset to defaults
 - File manager selection
+
+Subcommands:
+- `Show`: Display current configuration
+- `Edit`: Interactive configuration editing
+- `Set`: Set configuration value by key
+- `Get`: Get configuration value by key
+- `Reset`: Reset to default configuration
+- `SetFileManager`: Set default file manager
 
 #### `export.rs` / `import.rs`
 
 Configuration backup/restore:
 - TOML and JSON formats
 - Merge or replace on import
+- File output or stdout
 
 ### `platform/`
 
@@ -128,9 +146,9 @@ Platform-specific abstractions.
 #### `file_manager.rs`
 
 File manager integration:
-- `FileManager`: Main struct
+- `FileManager`: Main struct wrapping file manager commands
 - Platform-specific open methods
-- Terminal emulator detection
+- Support for terminal-based file managers
 - Custom command support
 
 ### `shell/`
@@ -140,16 +158,15 @@ Shell integration and completion.
 #### `mod.rs`
 
 Shell integration main module:
-- `generate_completions()`: Generate completion scripts
-- `install_integration()`: Install shell hooks
-- `print_init_script()`: Output init script
+- `generate_completions()`: Generate completion scripts for bash, zsh, fish, powershell
+- `install_integration()`: Install shell hooks to config files
+- `generate_integration_script()`: Output init script
 
 #### `completions.rs`
 
 Dynamic completion support:
 - Shortcut completion
-- Completion cache
-- Shell-specific scripts
+- Shell-specific completion generation
 
 #### `integration.rs`
 
@@ -160,9 +177,14 @@ Shell integration scripts as constants:
 - `POWERSHELL_INTEGRATION`
 - `ELVISH_INTEGRATION`
 
+Defines aliases:
+- `j` → `navr jump`
+- `jo` → `navr open`
+- `jl` → `navr jump --list`
+
 #### `shell_integration.rs`
 
-Separate binary for shell communication:
+Separate binary for shell communication (if needed):
 - `cd` resolution
 - Hook handling
 - History tracking
@@ -180,6 +202,9 @@ CLI Parsing (clap)
 JumpCommand::execute()
     ↓
 Resolve Target
+    ├── --list? → List all shortcuts (grouped by category)
+    ├── --add? → Add shortcut to config
+    ├── --remove? → Remove shortcut from config
     ├── Shortcut? → Config lookup
     ├── Path? → Expand and validate
     └── Fuzzy search → Suggestions
@@ -197,12 +222,14 @@ CLI Parsing
 OpenCommand::execute()
     ↓
 Resolve Path
+    ├── Shortcut? → Config lookup
+    └── Path? → Expand and validate
     ↓
 Determine File Manager
-    ├── Explicit? → Use specified
+    ├── Explicit (--with)? → Use specified
     └── Default? → Config or auto-detect
     ↓
-Platform::FileManager::open()
+FileManager::open()
     ↓
 Spawn Process
 ```
@@ -231,16 +258,19 @@ Modify? → Save (atomic write)
 - Clear structure
 - Rust ecosystem standard
 
+Configuration path uses `quicknav` directory for backward compatibility.
+
 ### 2. Shell Integration Architecture
 
 Two-part design:
 1. **Main binary** (`navr`): User-facing commands
-2. **Shell binary** (`navr-shell`): Shell communication
+2. **Shell scripts**: Embedded in `integration.rs`
 
 Benefits:
 - Clean separation of concerns
-- Shell can call helper without full CLI overhead
+- No separate shell binary needed
 - Easier testing
+- Simple installation
 
 ### 3. Platform Abstraction
 
@@ -256,13 +286,31 @@ Using `anyhow` for:
 - Context attachment
 - User-friendly messages
 
+Using `thiserror` for:
+- Structured error types
+- Error enum definitions
+
 ### 5. Shell Wrapper Design
 
-The `cd` wrapper:
-- Tries direct path first
-- Falls back to shortcut resolution
+The shell integration:
+- Defines shell functions for `j`, `jo`, `jl`
 - Maintains normal cd behavior
 - Minimal overhead
+- Tab completion support
+
+### 6. Command Pattern
+
+Each command follows a consistent pattern:
+```rust
+pub struct CommandName {
+    // fields
+}
+
+impl CommandName {
+    pub fn new(...) -> Self { ... }
+    pub fn execute(&self, config: &mut AppConfig) -> Result<()> { ... }
+}
+```
 
 ## Testing Strategy
 
@@ -289,8 +337,8 @@ Coverage:
 ### Manual Testing
 
 Scenarios:
-- All supported shells
-- All platforms
+- All supported shells (bash, zsh, fish, powershell)
+- All platforms (Windows, macOS, Linux)
 - Various file managers
 - Edge cases (permissions, missing dirs, etc.)
 
@@ -318,21 +366,47 @@ Scenarios:
 
 ### Path Handling
 
-- Path expansion (`~`, env vars)
-- Symlink following (configurable)
+- Path expansion (`~`, env vars) via `shellexpand`
+- Symlink following (configurable via `follow_symlinks`)
 - Directory traversal prevention
 
 ### Config File
 
 - User-owned only
 - No sensitive data stored
-- Safe serialization
+- Safe serialization via serde
 
 ### Shell Integration
 
 - No code injection vectors
 - Quote handling
 - Safe subprocess spawning
+
+## Dependencies
+
+### Core Dependencies
+
+- `clap` (4.4): CLI parsing with derive macros
+- `clap_complete` (4.4): Shell completion generation
+- `serde` (1.0): Serialization framework
+- `toml` (0.8): TOML parsing/serialization
+- `serde_json` (1.0): JSON support
+- `anyhow` (1.0): Error handling
+- `thiserror` (1.0): Structured errors
+- `tracing` (0.1): Logging framework
+- `dirs` (5.0): Platform directories
+- `owo-colors` (4.0): Terminal colors
+- `shellexpand` (3.1): Shell expansion
+- `which` (6.0): Command detection
+
+### Optional Dependencies
+
+- `inquire` (0.7): Interactive prompts (feature: `interactive`)
+
+### Platform-specific
+
+- `winapi` (0.3): Windows API
+- `windows` (0.52): Windows crate
 
 ## Future Extensions
 
@@ -346,9 +420,9 @@ Scenarios:
 
 ### Extension Points
 
-1. **New commands**: Add to `Commands` enum
-2. **New platforms**: Add to `platform/`
-3. **New shells**: Add to `shell/integration.rs`
+1. **New commands**: Add to `Commands` enum in `main.rs`
+2. **New platforms**: Add module to `platform/`
+3. **New shells**: Add script to `shell/integration.rs`
 4. **New file managers**: Add to `platform/file_manager.rs`
 
 ## Contributing
