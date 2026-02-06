@@ -10,6 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial changelog file
 
+## [0.1.11] - 2026-02-06
+
+### Added
+- Version and platform identifiers for build artifacts
+
+### Changed
+- Simplified release workflow configuration
+- Updated compression format to tar.xz with improved workflow structure
+- Enhanced release workflow functionality
+- Simplified release process using taiki-e's actions instead of custom build scripts
+
+### Removed
+- navr-shell binary configuration and packaging metadata
+
 ## [0.1.10] - 2026-02-06
 
 ### Added
